@@ -39,6 +39,8 @@ export class AppointmentService {
     appointment.startTime = startTime;
     appointment.doctor = doctor;
     appointment.durationMinutes = durationMinutes;
+    appointment.patientName = options.patientName;
+    appointment.description = options.description;
 
     const newAppointment = this.appointmentRepo.create(appointment);
     return this.appointmentRepo.save(newAppointment);
