@@ -1,0 +1,16 @@
+# This generates the types from your local server
+overwrite: true
+schema: 'http://localhost:8080/graphql'
+documents: 'src/graphql/**/*.gql'
+generates:
+  src/generated/core.graphql.tsx:
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'
+      - 'typescript-react-apollo'
+    config:
+      withHoc: false
+      withHooks: true
+      omitOperationSuffix: false
+      exportFragmentSpreadSubTypes: true
+      documentMode: graphQLTag

@@ -1,0 +1,6 @@
+query doctors {
+  doctors {
+    id
+    name
+  }
+}
