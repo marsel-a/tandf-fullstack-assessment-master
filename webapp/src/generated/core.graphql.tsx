@@ -28,6 +28,7 @@ export type AddItemInput = {
 export type Appointment = {
   __typename?: 'Appointment';
   description: Scalars['String'];
+  doctor: Doctor;
   durationMinutes: Scalars['Float'];
   id: Scalars['Float'];
   patientName: Scalars['String'];
@@ -85,8 +86,8 @@ export type Query = {
 
 
 export type QuerySlotsArgs = {
-  from: Scalars['DateTime'];
-  to: Scalars['DateTime'];
+  from?: InputMaybe<Scalars['DateTime']>;
+  to?: InputMaybe<Scalars['DateTime']>;
 };
 
 export type Slot = {
