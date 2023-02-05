@@ -46,4 +46,3 @@ export class AppointmentService {
     return this.appointmentRepo.save(newAppointment);
   }
 }
-
