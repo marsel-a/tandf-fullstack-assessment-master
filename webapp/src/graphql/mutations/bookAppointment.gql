@@ -1,0 +1,7 @@
+mutation bookAppointment($bookAppointmentInput: BookAppointmentInput!) {
+  bookAppointment(bookAppointmentInput: $bookAppointmentInput) {
+    id
+    startTime
+    durationMinutes
+  }
+}

@@ -25,7 +25,8 @@
     "react-dom": "18.2.0",
     "react-dates": "^21.8.0",
     "graphql": "^15.8.0",
-    "graphql-tag": "^2.12.6"
+    "graphql-tag": "^2.12.6",
+    "react-hook-form": "^7.43.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
