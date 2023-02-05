@@ -1,48 +1,84 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { Heading, Box, Text } from '@chakra-ui/react';
-import { addMinutes, addDays } from 'date-fns';
+import { Heading, Box, Text, Flex, Progress } from '@chakra-ui/react';
+import { addDays } from 'date-fns';
 
 import DoctorSelector from '@/components/DoctorSelector';
 import SlotSelector from '@/components/SlotSelector';
-import { Doctor, Slot, useDoctorsQuery } from '@/generated/core.graphql';
+import {
+  Doctor,
+  Slot,
+  useDoctorsQuery,
+  useSlotsLazyQuery,
+} from '@/generated/core.graphql';
 import { SlotWithKey } from '@/types/domain';
 
-const startDate = new Date();
-const generateSlots = (): SlotWithKey[] => {
-  return [
-    {
-      key: startDate.toString(),
-      start: startDate,
-      end: addMinutes(startDate, 15),
-      doctorId: 1,
-    },
-  ];
+const generateSlots = (
+  slots: Slot[],
+  selectedDoctor: Doctor
+): SlotWithKey[] => {
+  return slots
+    .filter((slot) => slot.doctorId === selectedDoctor.id)
+    .map((slot) => ({
+      key: slot.start,
+      start: Date.parse(slot.start),
+      end: Date.parse(slot.end),
+      doctorId: slot.doctorId,
+    }));
 };
 
 const Appointments = () => {
   const { data, loading } = useDoctorsQuery();
+  const [getSlots, { loading: loadingSlots }] = useSlotsLazyQuery();
   const [error, setError] = useState<string>();
   const [slots, setSlots] = useState<SlotWithKey[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor>();
   const [isLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<SlotWithKey>();
-  const minimumStartDate = slots?.[0]?.start;
-  const maximumStartDate = minimumStartDate && addDays(minimumStartDate, 30);
+  const minimumStartDate = useMemo(() => new Date(), []);
+  const maximumStartDate = useMemo(
+    () => minimumStartDate && addDays(minimumStartDate, 30),
+    [minimumStartDate]
+  );
 
-  useEffect(() => {
-    if (selectedDoctor) {
-      // fetch availabilities
-      // generate slots
-      const slots = generateSlots();
-      setSlots(slots);
-    } else {
+  const onChangeSelectedDoctor = (doc: Doctor | undefined) => {
+    setSelectedDoctor(doc);
+
+    if (!doc) {
       setSlots([]);
+      return;
     }
-  }, [selectedDoctor]);
+
+    // fetch availabilities
+    // generate slots
+    getSlots({
+      variables: {
+        from: minimumStartDate,
+        to: maximumStartDate,
+      },
+    }).then((res) => {
+      if (res.data) {
+        const generatedSlots = generateSlots(res.data.slots, doc);
+        setSlots(generatedSlots);
+      }
+    });
+  };
 
   return (
-    <Box>
+    <Flex
+      direction={'column'}
+      justifyItems={'center'}
+      alignItems={'center'}
+      gap={'8'}
+    >
+      {loadingSlots && (
+        <Progress
+          position={'absolute'}
+          width={'100vw'}
+          size='xs'
+          isIndeterminate
+        />
+      )}
       <Heading>Appointments</Heading>
       {error && (
         <Box>
@@ -52,7 +88,7 @@ const Appointments = () => {
       <DoctorSelector
         doctors={data?.doctors as Doctor[]}
         value={selectedDoctor}
-        onChange={setSelectedDoctor}
+        onChange={onChangeSelectedDoctor}
       />
       {slots?.length > 0 ? (
         <SlotSelector
@@ -66,7 +102,7 @@ const Appointments = () => {
       ) : (
         <Text>No slots available</Text>
       )}
-    </Box>
+    </Flex>
   );
 };
 
