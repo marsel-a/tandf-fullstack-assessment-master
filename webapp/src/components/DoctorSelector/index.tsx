@@ -1,6 +1,6 @@
 import { FC } from 'react';
 
-import { Box, Heading, Text } from '@chakra-ui/react';
+import { Box, Heading, Select, Text } from '@chakra-ui/react';
 
 import { Doctor } from '@/generated/core.graphql';
 
@@ -19,11 +19,19 @@ const DoctorSelector: FC<{
       {!doctors || doctors.length === 0 ? (
         <Text>No doctors</Text>
       ) : (
-        doctors.map((doc) => (
-          <Box key={doc.id} onClick={() => onChange(doc)}>
-            {doc.name}
-          </Box>
-        ))
+        <Select
+          placeholder='Select doctor'
+          onChange={(e) => {
+            const doc = e.target.value && JSON.parse(e.target.value);
+            onChange(doc);
+          }}
+        >
+          {doctors.map((doc) => (
+            <option key={doc.id} value={JSON.stringify(doc)}>
+              {doc.name}
+            </option>
+          ))}
+        </Select>
       )}
     </Box>
   );
