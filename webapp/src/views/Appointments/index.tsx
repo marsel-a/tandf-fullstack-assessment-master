@@ -1,7 +1,16 @@
 import { useMemo, useState } from 'react';
 
-import { Heading, Box, Text, Flex, Progress } from '@chakra-ui/react';
+import {
+  Heading,
+  Box,
+  Text,
+  Flex,
+  Progress,
+  useDisclosure,
+} from '@chakra-ui/react';
 import { addDays } from 'date-fns';
+
+import AppointmentModal from './AppointmentModal';
 
 import DoctorSelector from '@/components/DoctorSelector';
 import SlotSelector from '@/components/SlotSelector';
@@ -28,8 +37,13 @@ const generateSlots = (
 };
 
 const Appointments = () => {
+  const {
+    isOpen,
+    onOpen: onOpenAppointmentModal,
+    onClose: onCloseAppointmentModal,
+  } = useDisclosure();
   const { data, loading } = useDoctorsQuery();
-  const [getSlots, { loading: loadingSlots }] = useSlotsLazyQuery();
+  const [getSlots, { loading: isLoadingSlots }] = useSlotsLazyQuery();
   const [error, setError] = useState<string>();
   const [slots, setSlots] = useState<SlotWithKey[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor>();
@@ -41,17 +55,9 @@ const Appointments = () => {
     [minimumStartDate]
   );
 
-  const onChangeSelectedDoctor = (doc: Doctor | undefined) => {
-    setSelectedDoctor(doc);
-
-    if (!doc) {
-      setSlots([]);
-      return;
-    }
-
-    // fetch availabilities
-    // generate slots
+  const fetchAvailabilities = (doc: Doctor) => {
     getSlots({
+      fetchPolicy: 'no-cache',
       variables: {
         from: minimumStartDate,
         to: maximumStartDate,
@@ -64,6 +70,30 @@ const Appointments = () => {
     });
   };
 
+  const onChangeSelectedDoctor = (doc: Doctor | undefined) => {
+    setSelectedDoctor(doc);
+
+    if (!doc) {
+      setSlots([]);
+      return;
+    }
+
+    // fetch availabilities
+    // generate slots
+    fetchAvailabilities(doc);
+  };
+
+  const onChangeSelectedSlot = (slot: SlotWithKey) => {
+    setSelectedSlot(slot);
+    onOpenAppointmentModal();
+  };
+
+  const refetchAvailabilities = () => {
+    if (selectedDoctor) {
+      fetchAvailabilities(selectedDoctor);
+    }
+  };
+
   return (
     <Flex
       direction={'column'}
@@ -71,7 +101,7 @@ const Appointments = () => {
       alignItems={'center'}
       gap={'8'}
     >
-      {loadingSlots && (
+      {isLoadingSlots && (
         <Progress
           position={'absolute'}
           width={'100vw'}
@@ -96,12 +126,20 @@ const Appointments = () => {
           maximumStartDate={maximumStartDate}
           availableSlots={slots}
           value={selectedSlot}
-          onChange={setSelectedSlot}
+          onChange={onChangeSelectedSlot}
           loadingSlots={isLoading}
         />
       ) : (
         <Text>No slots available</Text>
       )}
+
+      <AppointmentModal
+        onClose={onCloseAppointmentModal}
+        onSuccess={refetchAvailabilities}
+        isOpen={isOpen}
+        doctor={selectedDoctor}
+        slot={selectedSlot}
+      />
     </Flex>
   );
 };
