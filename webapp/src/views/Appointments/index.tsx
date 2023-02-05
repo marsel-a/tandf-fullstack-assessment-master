@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react';
 
+import { ArrowBackIcon } from '@chakra-ui/icons';
 import {
   Heading,
-  Box,
   Text,
   Flex,
   Progress,
   useDisclosure,
+  Link,
 } from '@chakra-ui/react';
 import { addDays } from 'date-fns';
+import NextLink from 'next/link';
 
 import AppointmentModal from './AppointmentModal';
 
@@ -37,17 +39,9 @@ const generateSlots = (
 };
 
 const Appointments = () => {
-  const {
-    isOpen,
-    onOpen: onOpenAppointmentModal,
-    onClose: onCloseAppointmentModal,
-  } = useDisclosure();
-  const { data, loading } = useDoctorsQuery();
-  const [getSlots, { loading: isLoadingSlots }] = useSlotsLazyQuery();
-  const [error, setError] = useState<string>();
+  // States & Vars
   const [slots, setSlots] = useState<SlotWithKey[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor>();
-  const [isLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<SlotWithKey>();
   const minimumStartDate = useMemo(() => new Date(), []);
   const maximumStartDate = useMemo(
@@ -55,6 +49,16 @@ const Appointments = () => {
     [minimumStartDate]
   );
 
+  // Hooks
+  const {
+    isOpen,
+    onOpen: onOpenAppointmentModal,
+    onClose: onCloseAppointmentModal,
+  } = useDisclosure();
+  const { data, loading: isLoadingDoctors } = useDoctorsQuery();
+  const [getSlots, { loading: isLoadingSlots }] = useSlotsLazyQuery();
+
+  // Functions
   const fetchAvailabilities = (doc: Doctor) => {
     getSlots({
       fetchPolicy: 'no-cache',
@@ -96,25 +100,22 @@ const Appointments = () => {
 
   return (
     <Flex
-      direction={'column'}
-      justifyItems={'center'}
-      alignItems={'center'}
-      gap={'8'}
+      direction='column'
+      justifyItems='center'
+      alignItems='center'
+      gap='8'
+      margin='auto'
+      maxWidth='600px'
     >
-      {isLoadingSlots && (
-        <Progress
-          position={'absolute'}
-          width={'100vw'}
-          size='xs'
-          isIndeterminate
-        />
+      {(isLoadingSlots || isLoadingDoctors) && (
+        <Progress position='absolute' width='100vw' size='xs' isIndeterminate />
       )}
+      <NextLink href='/' passHref>
+        <Link mt='4'>
+          <ArrowBackIcon /> Back
+        </Link>
+      </NextLink>
       <Heading>Appointments</Heading>
-      {error && (
-        <Box>
-          <Text>{error}</Text>
-        </Box>
-      )}
       <DoctorSelector
         doctors={data?.doctors as Doctor[]}
         value={selectedDoctor}
@@ -127,10 +128,10 @@ const Appointments = () => {
           availableSlots={slots}
           value={selectedSlot}
           onChange={onChangeSelectedSlot}
-          loadingSlots={isLoading}
+          loadingSlots={false}
         />
       ) : (
-        <Text>No slots available</Text>
+        <Text>No slots available.</Text>
       )}
 
       <AppointmentModal

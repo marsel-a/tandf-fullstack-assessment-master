@@ -1,6 +1,6 @@
 import {
-  Box,
   Button,
+  Container,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -18,6 +18,7 @@ import moment from 'moment';
 import { useForm } from 'react-hook-form';
 import { SubmitHandler } from 'react-hook-form/dist/types';
 
+import HighlightBox from '@/components/HighlightBox';
 import { Doctor, useBookAppointmentMutation } from '@/generated/core.graphql';
 import { SlotWithKey } from '@/types/domain';
 
@@ -43,12 +44,15 @@ const AppointmentModal = ({
 }: Props) => {
   // States & Vars
   const doctorName = doctor?.name;
-  const slotTime = moment(slot?.start).format('MMMM Do YYYY, h:mm:ss a');
+  const slotDate = moment(slot?.start).format('MMMM Do YYYY');
+  const slotStartTime = moment(slot?.start).format('h:mm:ss a');
+  const slotEndTime = moment(slot?.end).format('h:mm:ss a');
 
   // Hooks
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormInputs>();
   const [bookAppointment, { loading: isBookingAppointment }] =
@@ -77,32 +81,39 @@ const AppointmentModal = ({
         alert(err);
       })
       .finally(() => {
-        onClose();
+        onCloseModal();
       });
+  };
+
+  const onCloseModal = () => {
+    reset();
+    onClose();
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={onCloseModal}
       closeOnOverlayClick={!isBookingAppointment}
     >
-      <ModalOverlay />
+      <ModalOverlay
+        bg='blackAlpha.300'
+        backdropFilter='blur(2px) hue-rotate(90deg)'
+      />
       <ModalContent>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader>Book Appointment</ModalHeader>
+          <ModalHeader>Book an Appointment</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <Box>
-              Book an appointment with{' '}
-              <Box px={1} py={1} bg={'orange.100'} display={'inline-block'}>
-                {doctorName}
-              </Box>
-              at
-              <Box px={1} py={1} bg={'orange.100'} display={'inline-block'}>
-                {slotTime}
-              </Box>
-            </Box>
+            <Container>
+              Book your appointment with{' '}
+              <HighlightBox>{doctorName}</HighlightBox> on
+              <HighlightBox>{slotDate}</HighlightBox> at{' '}
+              <HighlightBox>
+                {slotStartTime} - {slotEndTime}
+              </HighlightBox>
+            </Container>
+
             <FormControl mt={4} isInvalid={!!errors.patientName}>
               <FormLabel>
                 Patient name <span style={{ color: '#E53E' }}>*</span>
