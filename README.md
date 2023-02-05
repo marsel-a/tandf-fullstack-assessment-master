@@ -66,7 +66,7 @@ Read webapp/README.md for instructions on how to run the solution and how to use
 ## Marking
 
 For candidate:
-- total time taken: ~30 hours
+- total time taken: ~30 hours (including projects and graphql familiarisation)
 
 - For reviewer 
   - number of backend unit tests passing
