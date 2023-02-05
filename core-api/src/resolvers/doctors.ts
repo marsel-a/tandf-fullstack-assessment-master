@@ -3,6 +3,7 @@ import { Slot } from '@/models/appointments/Slot';
 import { AddDoctorInput } from '@/models/doctor/AddDoctorInput';
 import { NotImplementedException } from '@/models/errors/NotImplementedException';
 import { DoctorService } from '@/services/DoctorService';
+import { addDays } from 'date-fns';
 import { Arg, Mutation, Query, Resolver } from 'type-graphql';
 
 @Resolver(() => Doctor)
@@ -20,8 +21,9 @@ export class DoctorResolver {
   }
 
   @Query(() => [Slot])
-  async slots(@Arg('from') from: Date, @Arg('to') to: Date): Promise<Slot[]> {
-    return this.doctorService.getAvailableSlots(from, to);
+  async slots(@Arg('from', { nullable: true }) from: Date, @Arg('to', { nullable: true }) to: Date): Promise<Slot[]> {
+    const currentDate = new Date();
+    return this.doctorService.getAvailableSlots(from || currentDate, to || addDays(currentDate, 30));
   }
 }
 
