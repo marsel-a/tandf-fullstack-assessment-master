@@ -37,8 +37,8 @@ export class DoctorService {
       relations: ['availability', 'appointments'],
     });
 
-    const normalisedFrom = setSeconds(from, 0);
-    const normalisedTo = subSeconds(setSeconds(to, 0), 1);
+    const normalisedFrom = setSeconds(setMinutes(from, 0), 0);
+    const normalisedTo = subSeconds(setSeconds(setMinutes(to, 0), 0), 1);
 
     const timeIntervals = eachMinuteOfInterval(
       {
