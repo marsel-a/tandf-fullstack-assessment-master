@@ -66,7 +66,7 @@ Read webapp/README.md for instructions on how to run the solution and how to use
 ## Marking
 
 For candidate:
-- total time taken:   // please fill this in
+- total time taken: ~30 hours
 
 - For reviewer 
   - number of backend unit tests passing
